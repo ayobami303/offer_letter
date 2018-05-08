@@ -4,20 +4,16 @@ import { registerScreens } from './screens'
 
 registerScreens();
 
-const appStyle = {
-	statusBarColor: '#f2632b',
-	statusBarTextColorScheme: 'light',
+const appStyle = {	
 	navigationBarColor: '#000',
-	navBarBackgroundColor: '#f24d0c', 
-	navBarTextColor: 'white',
-	navBarButtonColor: 'white',	
-	topBarElevationShadowEnabled: true,	
+	navBarHidden: false,
+	topBarElevationShadowEnabled: false	
 }
 
 Navigation.startSingleScreenApp({
     screen:{
-        screen: 'offer_letter.form',
-        title: 'Offer Letter',
+        screen: 'offer_letter.login',
+        title: '',
         navigatorStyle: appStyle
     }
 })

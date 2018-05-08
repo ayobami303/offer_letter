@@ -3,6 +3,7 @@ import { View, Text, ScrollView, Picker, StyleSheet, ActivityIndicator } from 'r
 import { FormLabel, FormInput, FormValidationMessage, Button } from 'react-native-elements'
 import DatePicker from 'react-native-datepicker'
 import soap from 'soap-everywhere'
+import { Navigation } from "react-native-navigation";
 
 
 const opts = {
@@ -44,28 +45,29 @@ const amountFormatter = (amount) => {
     return output.replace(clearSeparator, '');
 };
 
+var today = new Date();
+var dd = today.getDate();
+var mm = today.getMonth() + 1; //January is 0!
+var yyyy = today.getFullYear();
+
+if (dd < 10) {
+    dd = '0' + dd
+}
+
+if (mm < 10) {
+    mm = '0' + mm
+}
+
+today = yyyy + '-' + mm + '-' + dd;
+
 class FormScreen extends Component{
     constructor(props){
         super(props)
 
-        var today = new Date();
-        var dd = today.getDate();
-        var mm = today.getMonth() + 1; //January is 0!
-        var yyyy = today.getFullYear();
-
-        if (dd < 10) {
-            dd = '0' + dd
-        }
-
-        if (mm < 10) {
-            mm = '0' + mm
-        }
-
-        today = yyyy + '-' + mm + '-' + dd;
-        
         this.state = {
             productList: [],
             isProductLoading: true,
+            isLoading: false,
             firstname:'',
             surname: '',
             product: 'select',
@@ -74,6 +76,7 @@ class FormScreen extends Component{
             email: '',
             amount: '',
             address: '',
+            isValidEmail: false,
             firstnameError: '',
             surnameError: '',
             productError: '',
@@ -83,7 +86,33 @@ class FormScreen extends Component{
             amountError: '',
             addressError: ''
         }
+
+        this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this))
     }
+
+    static navigatorButtons = {
+        rightButtons: [
+           { 
+               title: 'logout',
+                id: 'logout',
+                buttonFontSize: 14,
+                buttonFontWeight: 'bold'
+            }
+        ]
+    }
+
+    onNavigatorEvent(event){
+        if(event.type == 'NavBarButtonPress'){
+            if (event.id == 'logout') {                
+                // alert("logout pressed")
+                this.props.navigator.pop({
+                    animated: true,
+                    animationType: 'fade', 
+                })
+            }    
+        }
+    }
+
 
     componentDidMount(){
         this.get_product();
@@ -110,6 +139,48 @@ class FormScreen extends Component{
                     productList: [...thiss.state.productList, productList],
                     isProductLoading: false
                 }))
+            });
+        });
+    }
+
+    create_offer_letter = () =>{
+        const { firstname, surname, product, salaryDate, tenor, email, isValidEmail, amount, address } = this.state
+        
+        const args = {
+            surname: surname,
+            firstname: firstname,
+            address: address,
+            amount: amount,
+            tenure: tenor,
+            start_date: salaryDate,
+            product: product,
+            email: email
+        }
+
+        const thiss = this
+        soap.createClient('https://infolink.pagemfbank.com:6699/offer_service.php?wsdl', function (err, client) {
+            client.CreateOfferLetter(args, function (err, result) {
+                // alert(JSON.stringify(result));
+                if (result.Status == 'true') {
+                    thiss.setState({
+                        firstname: '',
+                        surname: '',
+                        product: 'select',
+                        salaryDate: today,
+                        tenor: 'select',
+                        email: '',
+                        amount: '',
+                        address: '',
+                        isValidEmail: false,
+                    })
+                    alert("Offer Letter Submitted Successfully.")
+                }else{
+                    alert("Something went wrong pls try again shortly.")
+                }
+
+                thiss.setState({
+                    isLoading: false
+                })
             });
         });
     }
@@ -153,13 +224,13 @@ class FormScreen extends Component{
 
     onEmailChange = (text) => {
         if (text.trim() === '') {
-            this.setState({ emailError: 'email address can not be blank' })
+            this.setState({ emailError: 'email address can not be blank', isValidEmail: false })
         } else {
             var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
             if (re.test(String(text).toLowerCase())){
-                this.setState({ emailError: '' })
+                this.setState({ emailError: '', isValidEmail: true })
             }else{
-                this.setState({ emailError: 'pls enter a valid email address' })                
+                this.setState({ emailError: 'pls enter a valid email address', isValidEmail: false })                
             }
             
         }
@@ -188,12 +259,46 @@ class FormScreen extends Component{
     }
 
     onSubmit(){
-        const {firstname, surname, product, salaryDate, tenor, email, amount, address} = this.state
-        if (firstname !== '' && surname !== '' && product !== '' && salaryDate !== '' && 
-            tenor !== '' && email !== '' && amount !== '' && address !== '') {
-            alert("firstname: " + firstname + '\nsurname: ' + surname + '\nproduct type: ' + product
-                    + '\nsalary date: ' + salaryDate + '\ntenor: ' + tenor + '\nemail: ' + email + '\namount: ' + amount + '\naddress: ' + address )
-            
+        const { firstname, surname, product, salaryDate, tenor, email, isValidEmail, amount, address} = this.state
+
+        if (firstname === '') {
+            this.setState({ firstnameError: 'firstname can not be blank' })            
+        }
+
+        if (surname === '') {
+            this.setState({ surnameError: 'surname can not be blank' })
+        }
+
+        if (product === 'select') {
+            this.setState({ productError: 'pls select a product' })
+        }
+
+        if (tenor === 'select') {
+            this.setState({ tenorError: 'pls select a tenor' })
+        }
+
+        if (email === '') {
+            this.setState({ emailError: 'email can not be blank' })
+        }
+        
+        if (amount === '') {
+            this.setState({ amountError: 'amount can not be blank' })
+        }
+
+        if (address === '') {
+            this.setState({ addressError: 'address can not be blank' })
+        }
+
+        if (firstname !== '' && surname !== '' && product !== 'select' && salaryDate !== '' && 
+            tenor !== 'select' && email !== '' && isValidEmail && amount !== '' && address !== '') {
+                this.create_offer_letter();
+                this.setState({
+                    isLoading: true
+                })
+            // alert("firstname: " + firstname + '\nsurname: ' + surname + '\nproduct type: ' + product
+            //         + '\nsalary date: ' + salaryDate + '\ntenor: ' + tenor + '\nemail: ' + email + '\namount: ' + amount + '\naddress: ' + address )            
+        }else{
+            alert("Pls fill all specified field correctly.")
         }
     }
 
@@ -205,15 +310,16 @@ class FormScreen extends Component{
         }
         return(            
                 this.state.isProductLoading ? 
-                    <View style={styles.indicatorContainer} >
-                        <ActivityIndicator style={styles.indicator} size="large" color="#f24d0c" />
+                    <View style={styles.pIndicatorContainer} >
+                        <ActivityIndicator style={styles.pIndicator} size="large" color="#f24d0c" />
                     </View> :  
 
-                <View style = {styles.container} >
+                <View style = {styles.container} >                    
                     <ScrollView>
                         <View style ={styles.formContainer} >
                             <FormLabel>FIRSTNAME</FormLabel>
                             <FormInput 
+                                value = {this.state.firstname}
                                 placeholder = "FIRSTNAME" 
                                 onChangeText = {(text) =>this.onFirstnameChange(text)}
                             />
@@ -221,6 +327,7 @@ class FormScreen extends Component{
                             
                             <FormLabel>SURNAME</FormLabel>
                             <FormInput 
+                                value={this.state.surname}                            
                                 placeholder = "SURNAME"
                                 onChangeText = {(text) =>{this.onSurnameChange(text)}}    
                             />
@@ -266,6 +373,7 @@ class FormScreen extends Component{
                             
                             <FormLabel>EMAIL</FormLabel>
                             <FormInput 
+                                value={this.state.email}
                                 placeholder = "EMAIL" 
                                 keyboardType = "email-address" 
                                 onChangeText = {(text) =>this.onEmailChange(text)}
@@ -274,6 +382,7 @@ class FormScreen extends Component{
 
                             <FormLabel>LOAN AMOUNT</FormLabel>
                             <FormInput 
+                                value={this.state.amount}
                                 placeholder = "LOAN AMOUNT" 
                                 keyboardType = "numeric"
                                 value = {this.state.amount}
@@ -283,6 +392,7 @@ class FormScreen extends Component{
                             
                             <FormLabel>HOUSE ADDRESS</FormLabel>
                             <FormInput 
+                                value={this.state.address}
                                 multiline = {true}
                                 numberOfLines = {3}
                                 placeholder = "HOUSE ADDRESS" 
@@ -292,7 +402,12 @@ class FormScreen extends Component{
                          
                             <Button title= "SUBMIT" onPress = {this.onSubmit.bind(this)} buttonStyle = {styles.submitButton}/>
                         </View>
-                    </ScrollView>                             
+                    </ScrollView>       
+                    {this.state.isLoading &&
+                        <View style={styles.indicatorContainer} >
+                            <ActivityIndicator style={styles.indicator} size="large" color="#f24d0c" />
+                        </View>
+                    }                      
                 </View>
         )
     }
@@ -320,14 +435,32 @@ const styles = StyleSheet.create({
 		backgroundColor: '#f24d0c'
 		// paddingTop:10	
     },
-    indicatorContainer:{
+    pIndicatorContainer:{
         alignItems: 'center',
         flex:1,
         justifyContent: 'center',
-        backgroundColor: 'black'
+        backgroundColor: 'rgba(255,255,255,0.5)'
+    },
+    pIndicator:{
+        backgroundColor: '#E5E5E5',
+        alignSelf: 'center',
+        padding: 10,
+        borderRadius:5
+    },
+    indicatorContainer:{
+        flex:1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(255,255,255,0.5)',
+        position: "absolute",
+        right: 0,
+        top: 0,
+        bottom: 0,
+        left: 0,
+        zIndex: 3
     },
     indicator:{
-        backgroundColor: 'pink',
+        backgroundColor: '#E5E5E5',
         alignSelf: 'center',
         padding: 10,
         borderRadius:5
