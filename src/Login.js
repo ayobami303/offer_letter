@@ -52,9 +52,7 @@ class Login extends Component{
 
         soap.createClient('https://infolink.pagemfbank.com:6699/offer_service.php?wsdl', function (err, client) {
             client.Authenticate(args, function (err, result) {
-                // alert(JSON.stringify(result));
                 if (result.Status == 'true') {                    
-                    // alert("Logged in Successfully.")
                     thiss.props.navigator.push({
                         screen: 'offer_letter.form',
                         title: 'Offer Letter',

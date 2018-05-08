@@ -192,7 +192,7 @@ class FormScreen extends Component{
             this.setState({ firstnameError: '' })
             // alert(text)
         }
-        this.setState({firstname: text.trim()})
+        this.setState({firstname: text})
     }
 
     onSurnameChange = (text) =>{
@@ -201,7 +201,7 @@ class FormScreen extends Component{
         } else {
             this.setState({ surnameError: '' })
         }
-        this.setState({ surname: text.trim() })
+        this.setState({ surname: text })
     }
 
     onProductChange = (text) =>{
@@ -210,7 +210,7 @@ class FormScreen extends Component{
         } else {
             this.setState({ productError: '' })
         }
-        this.setState({ product: text.trim() })
+        this.setState({ product: text })
     }
 
     onTenorChange = (text) =>{
@@ -255,7 +255,7 @@ class FormScreen extends Component{
         } else {
             this.setState({ addressError: '' })
         }
-        this.setState({ address: text.trim() })
+        this.setState({ address: text })
     }
 
     onSubmit(){
