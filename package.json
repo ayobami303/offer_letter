@@ -7,8 +7,10 @@
     "test": "jest"
   },
   "dependencies": {
+    "crypto-js": "^3.1.9-1",
     "react": "16.3.1",
     "react-native": "0.55.3",
+    "react-native-aes-crypto": "^1.2.1",
     "react-native-datepicker": "^1.7.2",
     "react-native-elements": "^0.19.1",
     "react-native-navigation": "^1.1.457",
