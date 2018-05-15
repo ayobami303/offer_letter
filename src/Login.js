@@ -3,8 +3,9 @@ import { View, Text, StyleSheet, Image, ActivityIndicator } from "react-native";
 import { FormInput, FormValidationMessage, FormLabel, Button } from "react-native-elements";
 import soap from 'soap-everywhere'
 import { Navigation } from "react-native-navigation";
-import Aes from "react-native-aes-crypto";
 import CryptoJS from "crypto-js";
+
+import { _decrypt, _encrypt } from "./util/collection";
 
 const appStyle = {
     statusBarColor: '#f2632b',
@@ -26,57 +27,6 @@ class Login extends Component{
         }
     }
 
-    componentDidMount(){
-        // const cipherText = CryptoJS.AES.encrypt('my message', 'myKey')
-        // const bytes = CryptoJS.AES.decrypt(cipherText.toString(), 'myKey')
-        // const plainText = bytes.toString(CryptoJS.enc.Utf8)
-        // console.log(cipherText.toString());
-        // alert('cipher text: ' + cipherText + '\nbytes: ' + bytes + '\nplain text: ' + plainText)
-
-        var key = CryptoJS.enc.Utf8.parse("H2N5B?KIVUr6f.6*");
-        var iv = CryptoJS.enc.Utf8.parse("RandomInitVector");
-        const cipherText = CryptoJS.AES.encrypt("sample_customer_account", key, { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
-
-        const bytes = CryptoJS.AES.decrypt(cipherText.toString(), key, { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 })
-        const plainText = bytes.toString(CryptoJS.enc.Utf8)
-        console.log(cipherText.toString());
-        alert('cipher text: ' + cipherText + '\nbytes: ' + bytes + '\nplain text: ' + plainText)
-        // alert(cipherText)
-        // const generateKey = (password, salt) => Aes.pbkdf2(password, salt);
-        // // var ivBase64 = "base64bytesstring";
-        // // Aes.encrypt('text', 'keyBase64', 'dHJ5aW5zbmQ=').then(cipher=>{
-        // //     alert('Key:' + cipher)
-        // // })
-        // const encrypt = (text, keyBase64) => {
-        //     var ivBase64 = "dHJ5aW5zbmQ=";
-        //     // alert('Key:' + JSON.stringify(Aes.pbkdf2('password', 'salt')));
-        //     return Aes.encrypt(text, keyBase64, ivBase64).then(cipher => ({ cipher, iv: ivBase64 }));
-        // };
-
-        // const decrypt = (encryptedData, key) => Aes.decrypt(encryptedData.cipher, key, encryptedData.iv);
-
-        // try {
-        //     generateKey("Arnold", "salt").then(key => {
-        //         console.log('Key:', key);
-        //         // alert('Key:' + key);
-        //         encrypt("These violent delights have violent ends", key).then(({ cipher, iv }) => {
-        //             console.log("Encrypted: ", cipher);
-        //             alert('Key:' + cipher)
-
-        //             // decrypt({ cipher, iv }, key).then(text => {
-        //             //     console.log("Decrypted:", text);
-        //             // });
-
-        //             // Aes.hmac256(cipher, key).then(hash => {
-        //             //     console.log("HMAC", hash);
-        //             // });
-        //         });
-        //     });
-        // } catch (e) {
-        //     console.error(e);
-        // }
-    }
-
     onUsernameChange = (text) =>{
         this.setState({
             username:text
@@ -88,24 +38,32 @@ class Login extends Component{
             password: text
         })
     }
-
+    
     onLogin = () =>{
         const { username, password } = this.state
 
-        const args = {
-            Username: username,
-            Password: password
+        // encUsername = this._encrypt(username),
+        // encPassword = this._encrypt(password)
+        const data = {
+            "Username": username,
+            "Password": password
         }
-
+        
+        encData = _encrypt(data)
+        const args = {
+            Hash:encData
+        }
+        
         const thiss = this
-
         this.setState({
             isLoading: true
         })
 
-        soap.createClient('https://infolink.pagemfbank.com:6699/offer_service.php?wsdl', function (err, client) {
-            client.Authenticate(args, function (err, result) {
-                if (result.Status == 'true') {                    
+        soap.createClient('https://pagefinancials.com/OfferLetter/offer_service.php?wsdl', function (err, client) {
+            client.AuthenticateMobile(args, function (err, encResult) {
+                console.log(encResult)
+                const result = _decrypt(encResult.Status)
+                if (result == 'true') {                    
                     thiss.props.navigator.push({
                         screen: 'offer_letter.form',
                         title: 'Offer Letter',
@@ -130,6 +88,8 @@ class Login extends Component{
                 <View style = {styles.formContainer}>
                     <FormInput 
                         placeholder = 'Email address/Username'
+                        keyboardType="email-address"
+                        autoCapitalize = 'none'
                         onChangeText = {(text) =>{this.onUsernameChange(text)}} />
                     <FormInput 
                         placeholder = 'Password' 

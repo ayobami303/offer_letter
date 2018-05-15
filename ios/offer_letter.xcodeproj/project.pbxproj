@@ -49,7 +49,6 @@
 		313B5BFC90F443E1AA7ADF0F /* Octicons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2D0C0243564C4720A3A49605 /* Octicons.ttf */; };
 		1F120345BD4A48A2A300C9C7 /* SimpleLineIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BBFB8DC7AEA54380A63765A7 /* SimpleLineIcons.ttf */; };
 		082A64874B5842BFB155031A /* Zocial.ttf in Resources */ = {isa = PBXBuildFile; fileRef = EB31F25D588C4A418B3B4D04 /* Zocial.ttf */; };
-		80130525435C4C7FB178FDAA /* libRCTAes.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 52B19085162F49809E88638D /* libRCTAes.a */; };
 		749535C69F2E4C46B45314BB /* libReactNativeNavigation.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 786456C2319B4F92A696BE91 /* libReactNativeNavigation.a */; };
 /* End PBXBuildFile section */
 
@@ -369,8 +368,6 @@
 		2D0C0243564C4720A3A49605 /* Octicons.ttf */ = {isa = PBXFileReference; name = "Octicons.ttf"; path = "../node_modules/react-native-vector-icons/Fonts/Octicons.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 		BBFB8DC7AEA54380A63765A7 /* SimpleLineIcons.ttf */ = {isa = PBXFileReference; name = "SimpleLineIcons.ttf"; path = "../node_modules/react-native-vector-icons/Fonts/SimpleLineIcons.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 		EB31F25D588C4A418B3B4D04 /* Zocial.ttf */ = {isa = PBXFileReference; name = "Zocial.ttf"; path = "../node_modules/react-native-vector-icons/Fonts/Zocial.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		5639066F0FB64487A6D21F32 /* RCTAes.xcodeproj */ = {isa = PBXFileReference; name = "RCTAes.xcodeproj"; path = "../node_modules/react-native-aes-crypto/ios/RCTAes.xcodeproj"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = wrapper.pb-project; explicitFileType = undefined; includeInIndex = 0; };
-		52B19085162F49809E88638D /* libRCTAes.a */ = {isa = PBXFileReference; name = "libRCTAes.a"; path = "libRCTAes.a"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = archive.ar; explicitFileType = undefined; includeInIndex = 0; };
 		0367FACACF6D46EFA25D1308 /* ReactNativeNavigation.xcodeproj */ = {isa = PBXFileReference; name = "ReactNativeNavigation.xcodeproj"; path = "../node_modules/react-native-navigation/ios/ReactNativeNavigation.xcodeproj"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = wrapper.pb-project; explicitFileType = undefined; includeInIndex = 0; };
 		786456C2319B4F92A696BE91 /* libReactNativeNavigation.a */ = {isa = PBXFileReference; name = "libReactNativeNavigation.a"; path = "libReactNativeNavigation.a"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = archive.ar; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
@@ -402,7 +399,6 @@
 				00C302EA1ABCBA2D00DB3ED1 /* libRCTVibration.a in Frameworks */,
 				139FDEF61B0652A700C62182 /* libRCTWebSocket.a in Frameworks */,
 				9C16C0B8913A414D8F32282F /* libRNVectorIcons.a in Frameworks */,
-				80130525435C4C7FB178FDAA /* libRCTAes.a in Frameworks */,
 				749535C69F2E4C46B45314BB /* libReactNativeNavigation.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -591,7 +587,6 @@
 				00C302DF1ABCB9EE00DB3ED1 /* RCTVibration.xcodeproj */,
 				139FDEE61B06529A00C62182 /* RCTWebSocket.xcodeproj */,
 				4BBF6116F376473186D24ADD /* RNVectorIcons.xcodeproj */,
-				5639066F0FB64487A6D21F32 /* RCTAes.xcodeproj */,
 				0367FACACF6D46EFA25D1308 /* ReactNativeNavigation.xcodeproj */,
 			);
 			name = Libraries;
@@ -1250,14 +1245,10 @@
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/offer_letter.app/offer_letter";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/$(TARGET_NAME)\"",
-					"\"$(SRCROOT)/$(TARGET_NAME)\"",
-					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)\..\node_modules\react-native-vector-icons\RNVectorIconsManager",
-					"$(SRCROOT)\..\node_modules\react-native-aes-crypto\ios\RCTAes/**",
 					"$(SRCROOT)\..\node_modules\react-native-navigation\ios/**",
 				);
 			};
@@ -1279,14 +1270,10 @@
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/offer_letter.app/offer_letter";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/$(TARGET_NAME)\"",
-					"\"$(SRCROOT)/$(TARGET_NAME)\"",
-					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)\..\node_modules\react-native-vector-icons\RNVectorIconsManager",
-					"$(SRCROOT)\..\node_modules\react-native-aes-crypto\ios\RCTAes/**",
 					"$(SRCROOT)\..\node_modules\react-native-navigation\ios/**",
 				);
 			};
@@ -1310,7 +1297,6 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)\..\node_modules\react-native-vector-icons\RNVectorIconsManager",
-					"$(SRCROOT)\..\node_modules\react-native-aes-crypto\ios\RCTAes/**",
 					"$(SRCROOT)\..\node_modules\react-native-navigation\ios/**",
 				);
 			};
@@ -1333,7 +1319,6 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)\..\node_modules\react-native-vector-icons\RNVectorIconsManager",
-					"$(SRCROOT)\..\node_modules\react-native-aes-crypto\ios\RCTAes/**",
 					"$(SRCROOT)\..\node_modules\react-native-navigation\ios/**",
 				);
 			};
@@ -1364,14 +1349,10 @@
 				TVOS_DEPLOYMENT_TARGET = 9.2;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/$(TARGET_NAME)\"",
-					"\"$(SRCROOT)/$(TARGET_NAME)\"",
-					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)\..\node_modules\react-native-vector-icons\RNVectorIconsManager",
-					"$(SRCROOT)\..\node_modules\react-native-aes-crypto\ios\RCTAes/**",
 					"$(SRCROOT)\..\node_modules\react-native-navigation\ios/**",
 				);
 			};
@@ -1402,14 +1383,10 @@
 				TVOS_DEPLOYMENT_TARGET = 9.2;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/$(TARGET_NAME)\"",
-					"\"$(SRCROOT)/$(TARGET_NAME)\"",
-					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)\..\node_modules\react-native-vector-icons\RNVectorIconsManager",
-					"$(SRCROOT)\..\node_modules\react-native-aes-crypto\ios\RCTAes/**",
 					"$(SRCROOT)\..\node_modules\react-native-navigation\ios/**",
 				);
 			};
@@ -1439,14 +1416,10 @@
 				TVOS_DEPLOYMENT_TARGET = 10.1;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/$(TARGET_NAME)\"",
-					"\"$(SRCROOT)/$(TARGET_NAME)\"",
-					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)\..\node_modules\react-native-vector-icons\RNVectorIconsManager",
-					"$(SRCROOT)\..\node_modules\react-native-aes-crypto\ios\RCTAes/**",
 					"$(SRCROOT)\..\node_modules\react-native-navigation\ios/**",
 				);
 			};
@@ -1476,14 +1449,10 @@
 				TVOS_DEPLOYMENT_TARGET = 10.1;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/$(TARGET_NAME)\"",
-					"\"$(SRCROOT)/$(TARGET_NAME)\"",
-					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)\..\node_modules\react-native-vector-icons\RNVectorIconsManager",
-					"$(SRCROOT)\..\node_modules\react-native-aes-crypto\ios\RCTAes/**",
 					"$(SRCROOT)\..\node_modules\react-native-navigation\ios/**",
 				);
 			};

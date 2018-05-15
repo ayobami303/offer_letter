@@ -4,46 +4,17 @@ import { FormLabel, FormInput, FormValidationMessage, Button } from 'react-nativ
 import DatePicker from 'react-native-datepicker'
 import soap from 'soap-everywhere'
 import { Navigation } from "react-native-navigation";
+import CryptoJS from "crypto-js";
 
+import { _decrypt, _encrypt, amountFormatter } from "./util/collection";
+import ProductSpinner from "./util/ProductSpinner";
+import TenorSpinner from './util/TenorSpinner';
 
-const opts = {
-    precision: 0,
-    separator: '.',
-    delimiter: ',',
-    unit: '₦',
-    //unit: opts.unit && (opts.unit.replace(/[\s]/g,'') + " ") || "",
-    suffixUnit: '',
-    zeroCents: false,
-    moneyPrecision: 0
-};
+const itemArray = [];
 
-const amountFormatter = (amount) => {
-    if (!amount) return '';
-
-    const number = amount.toString().replace(/[\D]/g, '');
-    const clearDelimiter = new RegExp(`^(0|\\${opts.delimiter})`);
-    const clearSeparator = new RegExp(`(\\${opts.separator})$`);
-    let money = number.substr(0, number.length - opts.moneyPrecision);
-    let masked = money.substr(0, money.length % 3);
-    const cents = new Array(opts.precision + 1).join('0');
-
-    money = money.substr(money.length % 3, money.length);
-    for (let i = 0, len = money.length; i < len; i++) {
-        if (i % 3 === 0) {
-            masked += opts.delimiter;
-        }
-        masked += money[i];
-    }
-    masked = masked.replace(clearDelimiter, '');
-    masked = masked.length ? masked : '0';
-
-    const unitToApply = opts.unit[opts.unit.length - 1] === ' ' ?
-        opts.unit.substring(0, opts.unit.length - 1)
-        :
-        opts.unit;
-    const output = unitToApply + masked + opts.separator + cents + opts.suffixUnit;
-    return output.replace(clearSeparator, '');
-};
+for (let i = 1; i < 37; i++) {
+    itemArray.push(<Picker.Item label={i.toString()} value={i} key={i} />)
+}
 
 var today = new Date();
 var dd = today.getDate();
@@ -60,12 +31,23 @@ if (mm < 10) {
 
 today = yyyy + '-' + mm + '-' + dd;
 
+const appStyle = {
+    statusBarColor: '#f2632b',
+    statusBarTextColorScheme: 'light',
+    navigationBarColor: '#000',
+    navBarBackgroundColor: '#f24d0c',
+    navBarTextColor: 'white',
+    navBarButtonColor: 'white',
+    topBarElevationShadowEnabled: true,
+}
+
 class FormScreen extends Component{
     constructor(props){
         super(props)
 
         this.state = {
             productList: [],
+            interest: '',
             isProductLoading: true,
             isLoading: false,
             firstname:'',
@@ -87,20 +69,9 @@ class FormScreen extends Component{
             addressError: ''
         }
 
-        this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this))
+        this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this))        
     }
-
-    static navigatorButtons = {
-        rightButtons: [
-           { 
-               title: 'logout',
-                id: 'logout',
-                buttonFontSize: 14,
-                buttonFontWeight: 'bold'
-            }
-        ]
-    }
-
+    
     onNavigatorEvent(event){
         if(event.type == 'NavBarButtonPress'){
             if (event.id == 'logout') {                
@@ -109,26 +80,66 @@ class FormScreen extends Component{
                     animated: true,
                     animationType: 'fade', 
                 })
-            }    
+            } 
+
+            if(event.id == 'calculator'){
+                // alert("pressed")
+                this.props.navigator.showModal({
+                    screen: 'offer_letter.DTICalculator',
+                    title: "DTI Calculator",
+                    passProps:{
+                        productList: this.state.productList,
+                        itemArray,
+                        interest: this.state.interest
+                    },
+                    navigatorStyle: appStyle,
+                    animationType: 'slide-up'
+                })
+            }
         }
     }
 
-
+    static navigatorButtons = {
+        rightButtons: [
+            {
+                title: 'logout',
+                id: 'logout',
+                buttonFontSize: 14,
+                buttonFontWeight: 'bold'
+            }
+        ],
+        fab: {
+            collapsedId: 'calculator',
+            collapsedIcon: require('./assets/cal.png'),
+            collapsedIconColor: 'white', // optional
+            backgroundColor: '#f24d0c'
+        },
+        animated: true
+    }
+    
     componentDidMount(){
         this.get_product();
-    }
+        
+        
 
+    }
+    
     get_product = () =>{
         const args = {
             ProductName: ''
         }
+        // console.log(JSON.stringify("encResult"));
 
         const thiss = this
-        soap.createClient('https://infolink.pagemfbank.com:6699/offer_service.php?wsdl', function(err, client) {
-            client.GetProducts(args, function(err, result) {
-                // alert(JSON.stringify(result));
-                const ProductName = result.ProductName
-                const productArray = ProductName.split(",");
+
+        soap.createClient('https://pagefinancials.com/OfferLetter/offer_service.php?wsdl', function(err, client) {
+            client.GetProducts(args, function(err, encResult) {
+                // console.log(JSON.stringify(_decrypt(encResult.ProductName)));
+                // console.log(JSON.stringify(_decrypt(encResult.Interest)));
+
+                const productName = _decrypt(encResult.ProductName)
+                const interest = _decrypt(encResult.Interest)
+                const productArray = productName.split(",");
                 
                 const productList = [];
                 productArray.forEach(element => {
@@ -137,6 +148,7 @@ class FormScreen extends Component{
                 
                 thiss.setState(prevState => ({
                     productList: [...thiss.state.productList, productList],
+                    interest, 
                     isProductLoading: false
                 }))
             });
@@ -146,22 +158,30 @@ class FormScreen extends Component{
     create_offer_letter = () =>{
         const { firstname, surname, product, salaryDate, tenor, email, isValidEmail, amount, address } = this.state
         
+        const formattedAmount = amount.toString().replace('₦', '')
+        const newAmount = formattedAmount.split(',').join('')
+
+        const data = {
+            "surname": surname,
+            "firstname": firstname,
+            "address": address,
+            "amount": newAmount,
+            "tenure": tenor,
+            "start_date": salaryDate,
+            "product": product,
+            "email": email
+        }
+
         const args = {
-            surname: surname,
-            firstname: firstname,
-            address: address,
-            amount: amount,
-            tenure: tenor,
-            start_date: salaryDate,
-            product: product,
-            email: email
+            Hash: _encrypt(data)
         }
 
         const thiss = this
-        soap.createClient('https://infolink.pagemfbank.com:6699/offer_service.php?wsdl', function (err, client) {
+        soap.createClient('https://pagefinancials.com/OfferLetter/offer_service.php?wsdl', function (err, client) {
             client.CreateOfferLetter(args, function (err, result) {
+                console.log(result)
                 // alert(JSON.stringify(result));
-                if (result.Status == 'true') {
+                if (_decrypt(result.Status) == 'true') {
                     thiss.setState({
                         firstname: '',
                         surname: '',
@@ -204,7 +224,7 @@ class FormScreen extends Component{
         this.setState({ surname: text })
     }
 
-    onProductChange = (text) =>{
+    onProductChange = (text, itemIndex) =>{
         if (text.trim() === 'select') {
             this.setState({ productError: 'pls select a product' })
         } else {
@@ -239,14 +259,11 @@ class FormScreen extends Component{
 
     onAmountChange = (text) => {
         if (text.trim() === '') {
-            this.setState({ amountError: 'amount can not be blank' })
+            this.setState({ amountError: 'loan amount can not be blank' })
         } else {
             this.setState({ amountError: '' })
         }
-        this.setState({ amount: amountFormatter(text.trim()) })
-        const {amount} = this.state
-        const formattedAmount = amount.toString().replace('₦', '')
-        // alert(formattedAmount.split(',').join(''))
+        this.setState({ amount: amountFormatter(text.trim()) })        
     }
 
     onAddressChange = (text) => {
@@ -260,54 +277,57 @@ class FormScreen extends Component{
 
     onSubmit(){
         const { firstname, surname, product, salaryDate, tenor, email, isValidEmail, amount, address} = this.state
+        let errorCount = 0
 
         if (firstname === '') {
             this.setState({ firstnameError: 'firstname can not be blank' })            
+            errorCount++
         }
 
         if (surname === '') {
             this.setState({ surnameError: 'surname can not be blank' })
+            errorCount++
         }
 
         if (product === 'select') {
             this.setState({ productError: 'pls select a product' })
+            errorCount++
         }
 
         if (tenor === 'select') {
             this.setState({ tenorError: 'pls select a tenor' })
+            errorCount++
         }
 
         if (email === '') {
             this.setState({ emailError: 'email can not be blank' })
+            errorCount++
         }
         
         if (amount === '') {
-            this.setState({ amountError: 'amount can not be blank' })
+            this.setState({ amountError: 'loan amount can not be blank' })
+            errorCount++
         }
 
         if (address === '') {
             this.setState({ addressError: 'address can not be blank' })
+            errorCount++
         }
 
-        if (firstname !== '' && surname !== '' && product !== 'select' && salaryDate !== '' && 
-            tenor !== 'select' && email !== '' && isValidEmail && amount !== '' && address !== '') {
+        if ( isValidEmail && errorCount <= 0) {
                 this.create_offer_letter();
                 this.setState({
                     isLoading: true
                 })
             // alert("firstname: " + firstname + '\nsurname: ' + surname + '\nproduct type: ' + product
             //         + '\nsalary date: ' + salaryDate + '\ntenor: ' + tenor + '\nemail: ' + email + '\namount: ' + amount + '\naddress: ' + address )            
+                             
         }else{
             alert("Pls fill all specified field correctly.")
         }
     }
 
-    render(){
-        const itemArray = [];
-
-        for (let i = 1; i < 37; i++) {            
-            itemArray.push(<Picker.Item label= {i.toString()} value= {i} key = {i} />)
-        }
+    render(){       
         return(            
                 this.state.isProductLoading ? 
                     <View style={styles.pIndicatorContainer} >
@@ -324,7 +344,7 @@ class FormScreen extends Component{
                                 onChangeText = {(text) =>this.onFirstnameChange(text)}
                             />
                             <FormValidationMessage>{this.state.firstnameError}</FormValidationMessage>
-                            
+
                             <FormLabel>SURNAME</FormLabel>
                             <FormInput 
                                 value={this.state.surname}                            
@@ -335,13 +355,10 @@ class FormScreen extends Component{
                             
                             <FormLabel>SELECT PRODUCT TYPE </FormLabel>
                             <View style = {styles.picker} >
-                                <Picker
-                                    selectedValue={this.state.product}
-                                    style={{ height: 50, width: 300 }}
-                                    onValueChange={(itemValue, itemIndex) => this.onProductChange(itemValue)}>
-                                    <Picker.Item label="SELECT PRODUCT TYPE" value="select" />
-                                    {this.state.productList}
-                                </Picker>                        
+                                <ProductSpinner onProductChange={this.onProductChange} 
+                                    productList={this.state.productList}
+                                    product ={this.state.product} />
+                                                  
                             </View>
                             <FormValidationMessage>{this.state.productError}</FormValidationMessage>
                             
@@ -361,13 +378,10 @@ class FormScreen extends Component{
                            
                             <FormLabel>SELECT TENOR</FormLabel>
                             <View style = {styles.picker} >
-                                <Picker
-                                    selectedValue={this.state.tenor}
-                                    style={{ height: 50, width: 300 }}
-                                    onValueChange={(itemValue, itemIndex) => this.onTenorChange(itemValue)}>
-                                    <Picker.Item label="SELECT TENOR" value="select" />
-                                    {itemArray}
-                                </Picker>
+                                <TenorSpinner 
+                                    onTenorChange = {this.onTenorChange} 
+                                    tenor = {this.state.tenor} tenorList = {itemArray} />
+                                
                             </View> 
                             <FormValidationMessage>{this.state.tenorError}</FormValidationMessage>
                             
@@ -375,7 +389,8 @@ class FormScreen extends Component{
                             <FormInput 
                                 value={this.state.email}
                                 placeholder = "EMAIL" 
-                                keyboardType = "email-address" 
+                                autoCapitalize = 'none'
+                                keyboardType = "email-address"
                                 onChangeText = {(text) =>this.onEmailChange(text)}
                             />
                             <FormValidationMessage>{this.state.emailError}</FormValidationMessage>
